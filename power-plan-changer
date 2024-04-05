@@ -1,12 +1,46 @@
 #!/bin/bash
 
+procId=$(echo $$)
+currentPlan=$(cat /sys/firmware/acpi/platform_profile)
 userChoice=0
 fileName="Power Plan Changer.desktop"
 pathShortcut="/home/$USER/Desktop/"
+configPath=$(dirname $0)
+shortcut
+
+shortcut_create() {
+	toggleShortcut=0
+	
+	if [ $shortcut -eq "1" ]; then
+		echo "on"
+	else
+		echo "off"
+	fi
+	
+	echo -e "\nToggle it? [y/n]"
+	read toggleShortcut
+	
+	case $toggleShortcut in
+	"y") if [ $shortcut -eq "1" ]; then
+		echo shortcut=0 > "$configPath/ppc_conf"
+	     elif [ $shortcut -eq "0"  ]; then
+	     	echo shortcut=1 > "$configPath/ppc_conf"
+	     fi ;;
+	 "n") ;;
+	 *) echo "No such option"	
+	 
+	 esac
+}
 
 clear
 
-if [ ! -f "$pathShortcut$fileName" ]; then
+if [ ! -f "$configPath/ppc_conf" ]; then
+	echo -e "shortcut=1;" > "$configPath/ppc_conf"
+fi
+
+source "$configPath/ppc_conf"
+
+if [ ! -f "$pathShortcut$fileName" ] && [ $shortcut -eq "1" ]; then
 	echo -e "[Desktop Entry]\n
 Name=Power Plan Changer\n
 Comment=Change power plans in lenovo laptop\n
@@ -16,12 +50,15 @@ Terminal=true\n
 Type=Application" > "$pathShortcut$fileName"
 fi
 
-clear
+if [ "$(id -u)" != "0" ]; then
+    echo "This script requires sudo!"
+    [ "$UID" -eq 0 ] || exec sudo "$0" "$@"
+fi
 
-[ "$UID" -eq 0 ] || exec sudo "$0" "$@"
-
-echo -e "For Lenovo Ideapad 5 Pro 14arh7, could work on other models\n"
-echo -e "Pick an option:\n\n1) check viable power plans\n2) Intelligent Cooling\n3) Extreme Performance\n4) Battery Saving\n\n>\c"
+echo -e "For Lenovo Ideapad 5 Pro 14arh7, could work on other models\n
+Current mode: $currentPlan\n"
+sleep 2
+echo -e "Pick an option:\n\n1) check viable power plans\n2) Intelligent Cooling\n3) Extreme Performance\n4) Battery Saving\n5) Shortcut creation\n6) Exit\n\n>\c"
 
 read userChoice
 clear
@@ -34,8 +71,12 @@ case $userChoice in
 		echo "Power plan is Performance" ;;
 	"4") echo 'low-power' > /sys/firmware/acpi/platform_profile
 		echo "Power plan is Battery Saving" ;;
+	"5") echo -e 'Shortcut creation: \c'
+		shortcut_create ;;
+	"6") sleep 1
+		kill -9 $procId ;;	
 	*) echo "No such option"
 esac
 
-sleep 3
+sleep 1
 exit
