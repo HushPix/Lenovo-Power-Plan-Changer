@@ -21,7 +21,7 @@ chmod +rw power-plan-changer
 ```
 3. Launch the script and pick your options.
 
-   
+ ![Screenshot of the script](https://github.com/FatPootis03/Lenovo-Power-Plan-Changer/blob/be3bdf310da85d33681964b54a4e3f5b1abcc529/assets/Screenshot%20from%202024-04-05%2020-34-02.png)
 
 _The script automatically adds a shortcut on your desktop so you won't have to find it and run it via console._
 
