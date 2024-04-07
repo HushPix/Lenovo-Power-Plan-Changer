@@ -1,7 +1,7 @@
 #!/bin/bash
 
 procId=$(echo $$)
-currentPlan=$(cat /sys/firmware/acpi/platform_profile)
+currentPlan="null"
 userChoice=0
 fileName="Power Plan Changer.desktop"
 pathShortcut="/home/$USER/Desktop/"
@@ -9,7 +9,8 @@ configPath=$(dirname $0)
 shortcut
 mainFunc=true
 
-shortcut_create() {
+shortcut_create() { 
+#This function is used for toggling shortcut creation
 	toggleShortcut=0
 	
 	if [ $shortcut -eq "1" ]; then
@@ -21,6 +22,7 @@ shortcut_create() {
 	echo -e "\nToggle it? [y/n]"
 	read toggleShortcut
 	
+	#It writes into the config
 	case $toggleShortcut in
 	"y") if [ $shortcut -eq "1" ]; then
 		echo shortcut=0 > "$configPath/ppc_conf"
@@ -35,12 +37,14 @@ shortcut_create() {
 
 clear
 
+#This checks if the config file is present, if not it will create it with #default values
 if [ ! -f "$configPath/ppc_conf" ]; then
 	echo -e "shortcut=1;" > "$configPath/ppc_conf"
 fi
 
 source "$configPath/ppc_conf"
 
+#This condition checks for existing shortcut, if not present it will create one
 if [ ! -f "$pathShortcut$fileName" ] && [ $shortcut -eq "1" ]; then
 	echo -e "[Desktop Entry]\n
 Name=Power Plan Changer\n
@@ -51,14 +55,18 @@ Terminal=true\n
 Type=Application" > "$pathShortcut$fileName"
 fi
 
-
+#This checks if script is ran as sudo
 if [ "$(id -u)" != "0" ]; then
     echo "This script requires sudo!"
     [ "$UID" -eq 0 ] || exec sudo "$0" "$@"
 fi
 
+
+#Main Body
 while true;
 do
+	currentPlan=$(cat /sys/firmware/acpi/platform_profile)
+	
 	clear
 	
 	echo -e "For Lenovo Ideapad 5 Pro 14arh7, could work on other models\t \e]8;;https://github.com/FatPootis03\e\\@FatPootis03\e]8;;\e\\
